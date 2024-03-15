@@ -7,15 +7,18 @@ pipeline = Pipeline.from_pretrained(
 import torch
 pipeline.to(torch.device("cuda"))
 
-audio_path = "b.wav"
-sample_rate = 16000
+audio_path = "vocals.wav"
+
+import scipy.io as sio
+
+sample_rate, data = sio.wavfile.read(audio_path)
+
+print(f"sample_rate: {sample_rate}")
 
 name = audio_path[:-4]
 
 # inference on the whole file
 diarization = pipeline(audio_path)
-
-
 
 import librosa
 import soundfile as sf
@@ -29,26 +32,30 @@ print(f"Audio Duration: {duration}")
 
 NUM_SPEAKERS = 0
 
+arr = []
+
 for turn, _, speaker in diarization.itertracks(yield_label=True):
-    print(f"start={turn.start}s stop={turn.end}s speaker_{speaker}")
+    # print(f"start={turn.start}s stop={turn.end}s speaker_{speaker}")
+    start = round(turn.start * sr)
+    end = round(turn.end * sr)
+    spe = int(speaker[8:])
+    arr.append([start, end, spe])
     if int(speaker[8:]) > NUM_SPEAKERS:
         NUM_SPEAKERS = int(speaker[8:])
-    if round(turn.end * sr) > duration:
-        duration = round(turn.end * sr)
+
+size = round(duration * sr)
 
 for i in range(0, NUM_SPEAKERS + 1):
-    ny = [0.0 for j in range(round(sr*duration))]
+    # print(f"speaker: {i}")
+    ny = [0.0 for j in range(size)]
 
-    for turn, _, speaker in diarization.itertracks(yield_label=True):
-        if int(speaker[8:]) == i:
-            # start = round(seg['start'] * sr)
-            # end = round(seg['end'] * sr)
-            start = round(turn.start * sr)
-            end = round(turn.end * sr)
-            for j in range(start, end):
+    for k in arr:
+        if k[2] == i:
+            # print(k[0], k[1], k[2])
+            for j in range(k[0], min(k[1], size)):
                 ny[j] = y[j]
 
-    sf.write(f"output\\{name}\\{name}_label{i}.wav", ny, sr, format='WAV')
+    sf.write(f"{name}_label_{i}.wav", ny, sr, format='wav')
 
 # # inference on an excerpt
 # from pyannote.core import Segment
