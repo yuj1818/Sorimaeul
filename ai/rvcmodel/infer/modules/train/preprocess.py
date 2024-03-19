@@ -104,7 +104,7 @@ class PreProcess:
 
     def pipeline_mp_inp_dir(self, inp_root, n_p):
         try:
-            file_extensions = [".wav"]  # Add other audio file extensions as needed
+            file_extensions = [".wav" , ".m4a"]  # Add other audio file extensions as needed
             infos = [
                 ("%s/%s" % (inp_root, name), idx)
                 for idx, name in enumerate(sorted(list(os.listdir(inp_root))))
