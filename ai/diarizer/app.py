@@ -55,7 +55,8 @@ def split(name):
     print('start split voice & background')
 
     audio_path = f'{root_path}/{name}/{name}.wav'
-    spl = f'spleeter separate -p spleeter:2stems -o {root_path} ' + audio_path
+    spl = f'spleeter separate -p spleeter:2stems -o {root_path} {audio_path}' # window
+    # spl = f'python3 -m spleeter separate -p spleeter:2stems -o {root_path} {audio_path}' # ubuntu
     os.system(spl)
 
     print('finish split')
@@ -68,7 +69,7 @@ def diarize(name, num):
     with tempfile.TemporaryDirectory() as outdir:
         voice = audio_path
 
-        wav_file = convert_wavfile(voice, f"{outdir}\\{name}_converted.wav")
+        wav_file = convert_wavfile(voice, f"{outdir}/{name}_converted.wav")
 
         diar = Diarizer(
             embed_model='xvec', # supported types: ['xvec', 'ecapa']
@@ -79,7 +80,7 @@ def diarize(name, num):
 
         segments = diar.diarize(wav_file,
                             num_speakers=num,
-                            outfile=f"{outdir}\\{name}.rttm"
+                            outfile=f"{outdir}/{name}.rttm"
         )
 
     sample_rate = 16000
