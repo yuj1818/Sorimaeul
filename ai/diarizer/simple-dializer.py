@@ -16,8 +16,8 @@ from tqdm.autonotebook import tqdm
 
 print("Start simple-dializer")
 
-audio_path = "glory.m4a"
-NUM_SPEAKERS = 2 # The number of speakers
+audio_path = "lily.wav"
+NUM_SPEAKERS = 3 # The number of speakers
 
 name = audio_path[:-4]
 
@@ -36,7 +36,7 @@ with tempfile.TemporaryDirectory() as outdir:
     print(f"wav file: {wav_file}")
 
     diar = Diarizer(
-        embed_model='ecapa', # supported types: ['xvec', 'ecapa']
+        embed_model='xvec', # supported types: ['xvec', 'ecapa']
         cluster_method='sc', # supported types: ['ahc', 'sc']
         window=1.5, # size of window to extract embeddings (in seconds)
         period=0.75 # hop of window (in seconds)
@@ -68,7 +68,7 @@ for i in range(0, NUM_SPEAKERS):
             for j in range(start, end):
                 ny[j] = y[j]
 
-    sf.write(f"output\\{name}\\{name}_label{i}.wav", ny, sr, format='WAV')
+    sf.write(f"{name}_label{i}.wav", ny, sr, format='WAV')
 
 # waveplot(signal, fs, figsize=(20,3))
 # plt.show()

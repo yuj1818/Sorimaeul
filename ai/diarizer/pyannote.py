@@ -7,7 +7,7 @@ pipeline = Pipeline.from_pretrained(
 import torch
 pipeline.to(torch.device("cuda"))
 
-audio_path = "vocals.wav"
+audio_path = "lily.wav"
 
 import scipy.io as sio
 
