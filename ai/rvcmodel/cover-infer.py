@@ -43,9 +43,9 @@ def create_cover(request):
     coverCode = request.coverCode
 
     download(request)
-    vocal, accompaniment = split(request)
-    inferred = infer(request, vocal)
-    output, name = mixing(request)
+    vocals, bass, drums, other = split(request)
+    inferred = infer(request, vocals)
+    output = mixing(request, inferred, bass, drums, other)
 
     # file = open(output, 'rb')
     # upload = {'file': file}
@@ -57,7 +57,7 @@ def create_cover(request):
 @app.post('/rvc/cover')
 def cover(request: Request, background_tasks: BackgroundTasks):
     background_tasks.add_task(create_cover, request)
-    return {"message": "Process accepted"}, 200
+    return {"status": 200, "message": "Process accepted"}
     
 
 # 유튜브 음원 다운로드
@@ -87,13 +87,15 @@ def split(request: Request):
 
     audio_path = f"{cover_path}/{userCode}/{coverCode}/origin/{coverCode}.wav"
     # spl = f"python3 -m spleeter separate -p spleeter:2stems -o {path} {audio_path}"
-    spl = f"spleeter separate -p spleeter:2stems -o {cover_path}/{userCode} {audio_path}"
+    spl = f"spleeter separate -p spleeter:4stems -o {cover_path}/{userCode} {audio_path}"
     os.system(spl)
 
-    vocal = f"{cover_path}/{userCode}/{coverCode}/vocals.wav"
-    accompaniment = f"{cover_path}/{userCode}/{coverCode}/accompaniment.wav"
+    vocals = f"{cover_path}/{userCode}/{coverCode}/vocals.wav"
+    bass = f"{cover_path}/{userCode}/{coverCode}/bass.wav"
+    drums = f"{cover_path}/{userCode}/{coverCode}/drums.wav"
+    other = f"{cover_path}/{userCode}/{coverCode}/other.wav"
 
-    return vocal, accompaniment
+    return vocals, bass, drums, other
 
 
 # 음원 추론(목소리 변환)
@@ -127,32 +129,31 @@ def infer(request: Request, vocal: str):
 
 
 # MR + 변환된 음성 믹싱
-def mixing(request: Request):
+def mixing(request: Request, inferred: str, bass: str, drums: str, other: str):
     userCode = request.userCode
     coverCode = request.coverCode
     pitch = request.pitch
 
-    inferred = f"{cover_path}/{userCode}/{coverCode}/inferred.wav"
-    accompaniment = f"{cover_path}/{userCode}/{coverCode}/accompaniment.wav"
-
     output = f"{cover_path}/{userCode}/{coverCode}/{coverCode}.mp3"
-    name = f"{coverCode}.mp3"
 
     print("start mixing")
 
-    ac_audio = AudioSegment.from_wav(accompaniment)
-    in_audio = AudioSegment.from_wav(inferred)
+    drums_audio = AudioSegment.from_wav(drums)
+    bass_audio = AudioSegment.from_wav(bass)
+    other_audio = AudioSegment.from_wav(other)
+    infer_audio = AudioSegment.from_wav(inferred)
 
     if pitch != 0:
-        ac_audio = pitch_shift(ac_audio, pitch)
+        bass_audio = pitch_shift(bass_audio, pitch)
+        other_audio = pitch_shift(other_audio, pitch)
 
-    mixed_audio = ac_audio.overlay(in_audio)
+    mixed_audio = drums_audio.overlay(bass_audio).overlay(other_audio).overlay(infer_audio)
 
     print(f"write result {output}")
 
     mixed_audio.export(output, format="mp3")
 
-    return output, name
+    return output
 
 
 ## 피치 조절
