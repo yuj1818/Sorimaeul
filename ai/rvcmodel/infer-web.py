@@ -2,8 +2,8 @@ import os
 import sys
 from dotenv import load_dotenv
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
-os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
+# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
+# os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
 
 
 now_dir = os.getcwd()
@@ -1208,7 +1208,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                     maximum=config.n_cpu,
                     step=1,
                     label=i18n("提取音高和处理数据使用的CPU进程数"),
-                    value=16,
+                    value=8,
                     interactive=True,
                 )
             with gr.Group():  # 暂时单人的, 后面支持最多4人的#数据处理
@@ -1320,7 +1320,7 @@ with gr.Blocks(title="RVC WebUI") as app:
                         maximum=40,
                         step=1,
                         label=i18n("每张显卡的batch_size"),
-                        value=8,
+                        value=4,
                         interactive=True,
                     )
                     if_save_latest13 = gr.Radio(
