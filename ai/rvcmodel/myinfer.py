@@ -177,7 +177,7 @@ class infer:
 
     def run(self):
         # vc = self.get_vc(model_path=self.model_path)
-        vc = VC(self.config)
+        vc = VC(self.config, self.device)
         vc.get_vc(model_path=self.model_path, index_path=self.index_path)
 
         msg, (tgt_sr, audio_opt) = vc.vc_single(sid=0,
