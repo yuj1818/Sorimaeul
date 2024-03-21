@@ -178,20 +178,20 @@ class infer:
     def run(self):
         # vc = self.get_vc(model_path=self.model_path)
         vc = VC(self.config, self.device)
-        vc.get_vc(model_path=self.model_path, index_path=self.index_path)
+        vc.get_vc(0, self.model_path, self.index_path, 0.33, 0.33)
 
-        msg, (tgt_sr, audio_opt) = vc.vc_single(sid=0,
-                            input_audio_path=self.input_path,
-                            f0_up_key=self.f0up_key,
-                            f0_file=None,
-                            f0_method=self.f0method,
-                            file_index=self.index_path,
-                            file_index2=None,
-                            index_rate=self.index_rate,
-                            filter_radius=3,
-                            resample_sr=0,
-                            rms_mix_rate=0.25,
-                            protect=0.33)
+        msg, (tgt_sr, audio_opt) = vc.vc_single(0,
+                            self.input_path,
+                            self.f0up_key,
+                            self.model_path,
+                            self.f0method,
+                            self.index_path,
+                            self.index_path,
+                            self.index_rate,
+                            3,
+                            0,
+                            0.25,
+                            0.33)
         # print(f"audio_opt: {audio_opt}")
 
         print(msg)

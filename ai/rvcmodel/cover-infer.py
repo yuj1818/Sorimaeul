@@ -105,8 +105,8 @@ def infer(request: Request, vocal: str):
     modelCode = request.modelCode
 
     pth = f"{model_path}/{modelCode}/pth.pth"
-    # index = f"{model_path}/{modelCode}/index.index"
-    index = None
+    index = f"{model_path}/{modelCode}/index.index"
+    # index = None
 
     output = f"{cover_path}/{userCode}/{coverCode}/inferred.wav"
 
@@ -118,7 +118,7 @@ def infer(request: Request, vocal: str):
                     f0method="rmvpe",
                     opt_path=output,
                     model_path=pth,
-                    index_rate=0,
+                    index_rate=0.6,
                     device="cuda:0",
                     is_half=True)
     
