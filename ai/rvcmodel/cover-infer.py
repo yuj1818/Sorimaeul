@@ -135,27 +135,22 @@ def mixing(request: Request):
     inferred = f"{cover_path}/{userCode}/{coverCode}/inferred.wav"
     accompaniment = f"{cover_path}/{userCode}/{coverCode}/accompaniment.wav"
 
-    output = f"{cover_path}/{userCode}/{coverCode}/{coverCode}.wav"
-    name = f"{coverCode}.wav"
+    output = f"{cover_path}/{userCode}/{coverCode}/{coverCode}.mp3"
+    name = f"{coverCode}.mp3"
 
     print("start mixing")
 
     ac_audio = AudioSegment.from_wav(accompaniment)
     in_audio = AudioSegment.from_wav(inferred)
 
-    pitch = pitch % 12
-
     if pitch != 0:
-        if pitch > 6:
-            pitch = pitch - 12
-
         ac_audio = pitch_shift(ac_audio, pitch)
 
     mixed_audio = ac_audio.overlay(in_audio)
 
     print(f"write result {output}")
 
-    mixed_audio.export(output, format="wav")
+    mixed_audio.export(output, format="mp3")
 
     return output, name
 
