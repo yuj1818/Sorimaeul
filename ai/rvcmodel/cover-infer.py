@@ -45,16 +45,39 @@ def create_cover(request):
 
     file = open(output, 'rb')
     upload = {'file': file}
+    
+    try:
+        # 커버 업로드
+        logger.info("Cover upload")
+        response = requests.post(f"https://j10e201.p.ssafy.io/api/cover/{coverCode}", files=upload)
+        response.raise_for_status()
+        logger.info(f"Response status {response.status_code}")
 
-    # 커버 업로드
-    response = requests.post(f"https://j10e201.p.ssafy.io/api/cover/{coverCode}", files=upload)
-    logger.info(response)
+        try:
+            # 알림 전송
+            logger.info("Send notification")
+            response = requests.post(f"https://j10e201.p.ssafy.io/api/sse/notify",
+                                    json={"userCode":userCode,
+                                        "data":f'AI 커버 "{coverName}" 제작이 완료되었습니다.'})
+            logger.info(f"Response status {response.status_code}")
 
-    # 알림 전송
-    response = requests.post(f"https://j10e201.p.ssafy.io/api/sse/notify",
-                             data={"userCode":userCode,
-                                   "data":f'AI 커버 "{coverName}" 생성 완료!'})
-    logger.info(response)
+        except requests.exceptions.RequestException as e:
+            logger.info(f"Error occurred: {e}")
+
+    except requests.exceptions.RequestException as e:
+        logger.info(f"Error occurred: {e}")
+        try:
+            # 알림 전송
+            logger.info("Send notification")
+            response = requests.post(f"https://j10e201.p.ssafy.io/api/sse/notify",
+                                    json={"userCode":userCode,
+                                        "data":f'AI 커버 "{coverName}" 제작에 실패했습니다.'})
+            logger.info(f"Response status {response.status_code}")
+        
+        except requests.exceptions.RequestException as e:
+            logger.info(f"Error occurred: {e}")
+
+    file.close()
 
     # 폴더 삭제
     shutil.rmtree(f"{cover_path}/{userCode}/{coverCode}")
