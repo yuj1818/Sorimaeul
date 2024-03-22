@@ -1,8 +1,7 @@
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from starlette.requests import Request
-from AI_Cover_Creator import AI_Cover
+from AI_Cover_Creator import Creator
 
 import os, shutil
 import requests
@@ -36,12 +35,12 @@ class Request(BaseModel):
     pitch: int
 
 
-def create_cover(request):
+def create_cover(request: Request):
     userCode = request.userCode
     coverCode = request.coverCode
     coverName = request.coverName
 
-    output = AI_Cover(request).create()
+    output = Creator(request).create()
 
     file = open(output, 'rb')
     upload = {'file': file}

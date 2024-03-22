@@ -15,7 +15,7 @@ cur_dir = os.getcwd()
 cover_path = f"{cur_dir}/cover"
 model_path = f"{cur_dir}/model"
 
-class AI_Cover:
+class Creator:
 
     def __init__(self, request):
         global youtubeURL, userCode, modelCode, coverCode, coverName, pitch
