@@ -45,19 +45,27 @@ sr_dict = {
 config = Config()
 vc = VC(config)
 logger = logging.getLogger(__name__)
+
+tmp = os.path.join(now_dir, "TEMP")
+shutil.rmtree(tmp, ignore_errors=True)
+shutil.rmtree("%s/runtime/Lib/site-packages/infer_pack" % (now_dir), ignore_errors=True)
+shutil.rmtree("%s/runtime/Lib/site-packages/uvr5_pack" % (now_dir), ignore_errors=True)
+os.makedirs(tmp, exist_ok=True)
+os.makedirs(os.path.join(now_dir, "logs"), exist_ok=True)
+os.makedirs(os.path.join(now_dir, "assets/weights"), exist_ok=True)
+os.environ["TEMP"] = tmp
+warnings.filterwarnings("ignore")
+torch.manual_seed(114514)
+
+
 i18n = I18nAuto()
+logger.info(i18n)
 
 # assets/indices 경로 의미함
 outside_index_root = os.getenv("outside_index_root")
-
-if config.dml == True:
-
-    def forward_dml(ctx, x, scale):
-        ctx.scale = scale
-        res = x.clone().detach()
-        return res
-
-    fairseq.modules.grad_multiply.GradMultiply.forward = forward_dml
+    
+def testtest():
+    print("Hello World!")
 
 def if_done(done, p):
     while 1:
@@ -65,12 +73,12 @@ def if_done(done, p):
             sleep(0.5)
         else:
             break
-    done[0] = True    
+    done[0] = True
 
 def if_done_multi(done, ps):
     while 1:
-        # poll==None Indicates that the process has not ended
-        # Stop as long as one process has not ended
+        # poll==None代表进程未结束
+        # 只要有一个进程未结束都不停
         flag = 1
         for p in ps:
             if p.poll() is None:
@@ -80,6 +88,44 @@ def if_done_multi(done, ps):
         if flag == 1:
             break
     done[0] = True
+
+def preprocess_dataset(trainset_dir, exp_dir, sr, n_p):
+    sr = sr_dict[sr]
+    os.makedirs("%s/logs/%s" % (now_dir, exp_dir), exist_ok=True)
+    f = open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "w")
+    f.close()
+    cmd = '"%s" infer/modules/train/preprocess.py "%s" %s %s "%s/logs/%s" %s %.1f' % (
+        config.python_cmd,
+        trainset_dir,
+        sr,
+        n_p,
+        now_dir,
+        exp_dir,
+        config.noparallel,
+        config.preprocess_per,
+    )
+    logger.info("Execute: " + cmd)
+    # , stdin=PIPE, stdout=PIPE,stderr=PIPE,cwd=now_dir
+    p = Popen(cmd, shell=True)
+    # 煞笔gr, popen read都非得全跑完了再一次性读取, 不用gr就正常读一句输出一句;只能额外弄出一个文本流定时读
+    done = [False]
+    threading.Thread(
+        target=if_done,
+        args=(
+            done,
+            p,
+        ),
+    ).start()
+    while 1:
+        with open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "r") as f:
+            yield (f.read())
+        sleep(1)
+        if done[0]:
+            break
+    with open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "r") as f:
+        log = f.read()
+    logger.info(log)
+    yield log
 
 def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvpe):
     gpus = gpus.split("-")
@@ -216,46 +262,6 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
         if done[0]:
             break
     with open("%s/logs/%s/extract_f0_feature.log" % (now_dir, exp_dir), "r") as f:
-        log = f.read()
-    logger.info(log)
-    yield log    
-
-def preprocess_dataset(trainset_dir, exp_dir, sr, n_p):
-    sr = sr_dict[sr]
-    os.makedirs("%s/logs/%s" % (now_dir, exp_dir), exist_ok=True)
-    f = open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "w")
-    f.close()
-    cmd = '"%s" infer/modules/train/preprocess.py "%s" %s %s "%s/logs/%s" %s %.1f' % (
-        config.python_cmd,
-        trainset_dir,
-        sr,
-        n_p,
-        now_dir,
-        exp_dir,
-        config.noparallel,
-        config.preprocess_per,
-    )
-    logger.info("Execute: " + cmd)
-    # , stdin=PIPE, stdout=PIPE,stderr=PIPE,cwd=now_dir
-    p = Popen(cmd, shell=True)
-    # 煞笔gr, popen read
-    # You have to run it all and then read it all at once. You can read one sentence and output one 
-    # sentence normally without gr; you can only create an additional text stream for regular reading.
-    done = [False]
-    threading.Thread(
-        target=if_done,
-        args=(
-            done,
-            p,
-        ),
-    ).start()
-    while 1:
-        with open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "r") as f:
-            yield (f.read())
-        sleep(1)
-        if done[0]:
-            break
-    with open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "r") as f:
         log = f.read()
     logger.info(log)
     yield log
@@ -505,40 +511,53 @@ def train_index(exp_dir1, version19):
     # faiss.write_index(index, '%s/added_IVF%s_Flat_FastScan_%s.index'%(exp_dir,n_ivf,version19))
     # infos.append("成功构建索引，added_IVF%s_Flat_FastScan_%s.index"%(n_ivf,version19))
     yield "\n".join(infos)
+    
 
+def train1key(
+    exp_dir1,
+    sr2,
+    if_f0_3,
+    trainset_dir4,
+    spk_id5,
+    np7,
+    f0method8,
+    save_epoch10,
+    total_epoch11,
+    batch_size12,
+    if_save_latest13,
+    pretrained_G14,
+    pretrained_D15,
+    gpus16,
+    if_cache_gpu17,
+    if_save_every_weights18,
+    version19,
+    gpus_rmvpe,
+):
+    infos = []
 
-# request 받은 데이터로 클래스 만들기
-#     def __init__(self, request_form):
-#         self.exp_dir1 = request_form.get('exp_dir1')
-#         self.sr2 = request_form.get('sr2')
-#         self.if_f0_3 = request_form.get('if_f0_3')
-#         self.trainset_dir4 = request_form.get('trainset_dir4')
-#         self.spk_id5 = request_form.get('spk_id5')
-#         self.np7 = request_form.get('np7')
-#         self.f0method8 = request_form.get('f0method8')
-#         self.save_epoch10 = request_form.get('save_epoch10')
-#         self.total_epoch11 = request_form.get('total_epoch11')
-#         self.batch_size12 = request_form.get('batch_size12')
-#         self.if_save_latest13 = request_form.get('if_save_latest13')
-#         self.pretrained_G14 = request_form.get('pretrained_G14')
-#         self.pretrained_D15 = request_form.get('pretrained_D15')
-#         self.gpus16 = request_form.get('gpus16')
-#         self.if_cache_gpu17 = request_form.get('if_cache_gpu17')
-#         self.if_save_every_weights18 = request_form.get('if_save_every_weights18')
-#         self.version19 = request_form.get('version19')
-#         self.gpus_rmvpe = request_form.get('gpus_rmvpe')
+    def get_info_str(strr):
+        infos.append(strr)
+        return "\n".join(infos)
 
-class Training:
-        
-    # 최종적으로 실행되야 하는 코드
-    def train1key(
+    get_info_str(i18n("step1:正在处理数据"))
+    [get_info_str(_) for _ in preprocess_dataset(trainset_dir4, exp_dir1, sr2, np7)]
+
+    # step2a:提取音高
+    get_info_str(i18n("step2:正在提取音高&正在提取特征"))
+    [
+        get_info_str(_)
+        for _ in extract_f0_feature(
+            gpus16, np7, f0method8, if_f0_3, exp_dir1, version19, gpus_rmvpe
+        )
+    ]
+
+    # step3a:训练模型
+    get_info_str(i18n("step3a:正在训练模型"))
+    click_train(
         exp_dir1,
         sr2,
         if_f0_3,
-        trainset_dir4,
         spk_id5,
-        np7,
-        f0method8,
         save_epoch10,
         total_epoch11,
         batch_size12,
@@ -549,50 +568,11 @@ class Training:
         if_cache_gpu17,
         if_save_every_weights18,
         version19,
-        gpus_rmvpe,
-    ):
-        infos = []
+    )
+    get_info_str(
+        i18n("训练结束, 您可查看控制台训练日志或实验文件夹下的train.log")
+    )
 
-        def get_info_str(strr):
-            infos.append(strr)
-            return "\n".join(infos)
-
-        # step1:处理数据
-        yield get_info_str(i18n("step1:正在处理数据"))
-        preprocess_dataset(trainset_dir4, exp_dir1, sr2, np7)
-
-        # step2a:提取音高
-        yield get_info_str(i18n("step2:正在提取音高&正在提取特征"))
-        [
-            get_info_str(_)
-            for _ in extract_f0_feature(
-                gpus16, np7, f0method8, if_f0_3, exp_dir1, version19, gpus_rmvpe
-            )
-        ]
-
-        # step3a:训练模型
-        yield get_info_str(i18n("step3a:正在训练模型"))
-        click_train(
-            exp_dir1,
-            sr2,
-            if_f0_3,
-            spk_id5,
-            save_epoch10,
-            total_epoch11,
-            batch_size12,
-            if_save_latest13,
-            pretrained_G14,
-            pretrained_D15,
-            gpus16,
-            if_cache_gpu17,
-            if_save_every_weights18,
-            version19,
-        )
-        yield get_info_str(
-            i18n("训练结束, 您可查看控制台训练日志或实验文件夹下的train.log")
-        )
-
-        # step3b:训练索引
-        [get_info_str(_) for _ in train_index(exp_dir1, version19)]
-        yield get_info_str(i18n("全流程结束！")) # 완료
+    # step3b:训练索引
+    [get_info_str(_) for _ in train_index(exp_dir1, version19)]
 
