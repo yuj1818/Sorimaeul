@@ -101,8 +101,13 @@ class AI_Cover:
         infer_audio = AudioSegment.from_wav(inferred)
 
         if pitch != 0:
-            bass_audio = self.pitch_shift(bass_audio, pitch)
-            other_audio = self.pitch_shift(other_audio, pitch)
+            key = pitch
+            if key < -8:
+                key = key + 12
+            elif key > 8:
+                key = key - 12
+            bass_audio = self.pitch_shift(bass_audio, key)
+            other_audio = self.pitch_shift(other_audio, key)
 
         mixed_audio = drums_audio.overlay(bass_audio).overlay(other_audio).overlay(infer_audio)
 
