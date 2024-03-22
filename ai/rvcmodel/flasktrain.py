@@ -2,6 +2,9 @@ from flask import Flask, request
 import os
 import onetrain
 
+# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
+# os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
+
 app = Flask(__name__)
 
 # input 값 정리
