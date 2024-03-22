@@ -30,3 +30,4 @@ ffprobe.*
 pretrained_models/**
 cover/**
 model/**
+dubbing/**
