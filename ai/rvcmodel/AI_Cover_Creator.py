@@ -15,6 +15,7 @@ cur_dir = os.getcwd()
 cover_path = f"{cur_dir}/cover"
 model_path = f"{cur_dir}/model"
 
+
 class Creator:
 
     def __init__(self, request):
@@ -38,6 +39,10 @@ class Creator:
     # 유튜브 음원 다운로드
     def download(self):
         yt = YouTube(youtubeURL)
+        yt.check_availability()
+
+        if yt.length > 600:
+            raise TooLongYoutubeException
 
         logger.info(f"Start download youtube : {yt.title}")
 
@@ -124,3 +129,8 @@ class Creator:
         y = librosa.effects.pitch_shift(y, sound.frame_rate, n_steps=n_steps)
         a = AudioSegment(np.array(y * (1<<15), dtype=np.int32).tobytes(), frame_rate = sound.frame_rate, sample_width=4, channels = 1)
         return a
+
+
+class TooLongYoutubeException(Exception):
+    def __init__(self):
+        super().__init__("영상의 길이가 10분 이상입니다.")
