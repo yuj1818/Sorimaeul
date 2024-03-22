@@ -43,31 +43,23 @@ def create_cover(request: Request):
     coverName = request.coverName
 
     try:
+        # 커버 제작
         output = Creator(request).create()
 
+        # 커버 업로드
         file = open(output, 'rb')
         upload = {'file': file}
         
-        try:
-            # 커버 업로드
-            logger.info("Cover upload")
-            response = requests.post(f"https://j10e201.p.ssafy.io/api/cover/{coverCode}", files=upload)
-            response.raise_for_status()
-            logger.info(f"Response status {response.status_code}")
-            msg = f'AI 커버 "{coverName}" 제작이 완료되었습니다.'
-            sendNotification(userCode, msg)
-        except requests.exceptions.RequestException as e:
-            logger.info(f"Error occurred: {e}")
-            msg = f'AI 커버 "{coverName}" 제작에 실패했습니다.'
-            sendNotification(userCode, msg)
-
-        file.close()
+        logger.info("Cover upload")
+        response = requests.post(f"https://j10e201.p.ssafy.io/api/cover/{coverCode}", files=upload)
+        response.raise_for_status()
+        
+        logger.info(f"Response status {response.status_code}")
+        msg = f'AI 커버 "{coverName}" 제작이 완료되었습니다.'
 
     except TooLongYoutubeException as e:
         logger.info(f"Youtube error : {e}")
         msg = f'AI 커버 "{coverName}"의 유튜브 영상 길이가 10분이 넘습니다.'
-        sendNotification(userCode, msg)
-        return
     
     except (ex.PytubeError,
             ex.MaxRetriesExceeded,
@@ -83,18 +75,19 @@ def create_cover(request: Request):
             ex.VideoRegionBlocked) as e:
         logger.info(f"Youtube error : {e}")
         msg = f'AI 커버 "{coverName}"의 유튜브에 접근할 수 없습니다.'
-        sendNotification(userCode, msg)
-        return
     
     except Exception as e:
         logger.info(f"Error occurred: {e}")
         msg = f'AI 커버 "{coverName}" 제작에 실패했습니다.'
-        sendNotification(userCode, msg)
-        return
     
     finally:
+        # 알림 전송
+        sendNotification(userCode, msg)
+
         # 폴더 삭제
         if os.path.exists(f"{cover_path}/{userCode}/{coverCode}"):
+            if file:
+                file.close()
             shutil.rmtree(f"{cover_path}/{userCode}/{coverCode}")
             logger.info(f"Remove {cover_path}/{userCode}/{coverCode}")
 
