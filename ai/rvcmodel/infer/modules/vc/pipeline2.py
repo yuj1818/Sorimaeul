@@ -231,10 +231,14 @@ class Pipeline(object):
             # _, I = index.search(npy, 1)
             # npy = big_npy[I.squeeze()]
             
+            print("---vc 1")
             score, ix = index.search(npy, k=8)
+            print("---vc 1.5")
             weight = np.square(1 / score)
+            print("---vc 2")
             weight /= weight.sum(axis=1, keepdims=True)
             npy = np.sum(big_npy[ix] * np.expand_dims(weight, axis=2), axis=1)
+            print("---vc 3")
 
             if self.is_half:
                 npy = npy.astype("float16")

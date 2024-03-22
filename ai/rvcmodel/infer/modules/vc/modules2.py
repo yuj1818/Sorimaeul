@@ -20,7 +20,7 @@ from infer.modules.vc.utils import *
 
 
 class VC:
-    def __init__(self, config, device):
+    def __init__(self, config):
         self.n_spk = None
         self.tgt_sr = None
         self.net_g = None
@@ -30,7 +30,6 @@ class VC:
         self.if_f0 = None
         self.version = None
         self.hubert_model = None
-        self.device = device
 
         self.config = config
 
@@ -99,7 +98,7 @@ class VC:
                 "",
             )
 
-        self.cpt = torch.load(model_path, map_location=self.device)
+        self.cpt = torch.load(model_path, map_location="cpu")
         self.tgt_sr = self.cpt["config"][-1]
         self.cpt["config"][-3] = self.cpt["weight"]["emb_g.weight"].shape[0]  # n_spk
         self.if_f0 = self.cpt.get("f0", 1)
@@ -127,7 +126,7 @@ class VC:
 
         self.pipeline = Pipeline(self.tgt_sr, self.config)
         n_spk = self.cpt["config"][-3]
-        index = {"value": index_path, "__type__": "update"}
+        index = {"value": str(index_path), "__type__": "update"}
         logger.info("Select index: " + index["value"])
 
         return (

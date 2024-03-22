@@ -2,8 +2,8 @@
 runtime\python.exe myinfer.py 0 "E:\codes\py39\RVC-beta\todo-songs\1111.wav" "E:\codes\py39\logs\mi-test\added_IVF677_Flat_nprobe_7.index" harvest "test.wav" "weights/mi-test.pth" 0.6 cuda:0 True
 '''
 import os,sys,pdb,torch
-now_dir = os.getcwd()
-sys.path.append(now_dir)
+# now_dir = os.getcwd()
+# sys.path.append(now_dir)
 # import argparse
 # import glob
 import sys
@@ -21,6 +21,10 @@ from infer.lib.audio import load_audio
 from scipy.io import wavfile
 from configs.config2 import Config
 # from infer.modules.vc.pipeline import Pipeline
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
 # os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 9 to use
@@ -115,7 +119,7 @@ class infer:
         self.is_half=is_half # True
         self.config=Config(device)
         self.now_dir=os.getcwd()
-        sys.path.append(now_dir)
+        sys.path.append(self.now_dir)
         self.hubert_model=None
         self.cpt=None
         self.tgt_sr=None;
@@ -177,8 +181,8 @@ class infer:
 
     def run(self):
         # vc = self.get_vc(model_path=self.model_path)
-        vc = VC(self.config, self.device)
-        vc.get_vc(0, self.model_path, self.index_path, 0.33, 0.33)
+        vc = VC(self.config)
+        vc.get_vc("pth.pth", self.model_path, self.index_path, 0.33, 0.33)
 
         msg, (tgt_sr, audio_opt) = vc.vc_single(0,
                             self.input_path,
@@ -194,9 +198,8 @@ class infer:
                             0.33)
         # print(f"audio_opt: {audio_opt}")
 
-        print(msg)
-        
-        print(f"write file {self.opt_path}")
+        logger.info(msg)
+        logger.info(f"Write file {self.opt_path}")
 
         wavfile.write(self.opt_path, tgt_sr, audio_opt)
 
