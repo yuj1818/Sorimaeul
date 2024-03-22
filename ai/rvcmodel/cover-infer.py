@@ -46,13 +46,17 @@ def create_cover(request):
     file = open(output, 'rb')
     upload = {'file': file}
 
+    # 커버 업로드
     response = requests.post(f"https://j10e201.p.ssafy.io/api/cover/{coverCode}", files=upload)
     logger.info(response)
+
+    # 알림 전송
     response = requests.post(f"https://j10e201.p.ssafy.io/api/sse/notify",
                              data={"userCode":userCode,
                                    "data":f'AI 커버 "{coverName}" 생성 완료!'})
     logger.info(response)
 
+    # 폴더 삭제
     shutil.rmtree(f"{cover_path}/{userCode}/{coverCode}")
     logger.info(f"Remove {cover_path}/{userCode}/{coverCode}")
 
