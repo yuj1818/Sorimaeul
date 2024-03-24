@@ -576,3 +576,7 @@ def train1key(
     # step3b:训练索引
     [get_info_str(_) for _ in train_index(exp_dir1, version19)]
 
+    
+    #저장된 pth 파일 이동 (assets/weights/{name}.pth -> model/{modelcode}/pth.pth)
+    
+

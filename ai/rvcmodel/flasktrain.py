@@ -8,6 +8,7 @@ import onetrain
 app = Flask(__name__)
 
 # input 값 정리
+# modelcode : 몇번 모델인지 가르킴 (숫자)
 # exp_dir1 : 만들어지는 목소리 모델명 ex) gosegu, jeongmin (입력받아야함)
 # sr2 :  "48k" 고정 (목표 샘플링률)
 # if_f0_3 : True 고정 (이 설정 체크 안하면 음 높낮이 X)
@@ -30,6 +31,7 @@ app = Flask(__name__)
 
 #request json 예시
 # {
+#     "modelcode" : 1
 #     "exp_dir1" : "jeongminjeongmin",
 #     "sr2" : "48k",
 #     "if_f0_3" : "True",
@@ -56,6 +58,7 @@ def training():
 
     data = request.json
 
+    modelcode = data['modelcode']
     exp_dir1 = data['exp_dir1']
     sr2 = data['sr2']
     if_f0_3 = data['if_f0_3']
@@ -79,7 +82,7 @@ def training():
     onetrain.train1key(         
         exp_dir1, sr2, if_f0_3, trainset_dir4, spk_id5, np7, f0method8, save_epoch10,
         total_epoch11, batch_size12, if_save_latest13, pretrained_G14, pretrained_D15,
-        gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe
+        gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe, modelcode
     )
     
     
