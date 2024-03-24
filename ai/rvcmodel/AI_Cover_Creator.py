@@ -107,10 +107,11 @@ class Creator:
 
         if pitch != 0:
             key = pitch
-            if key < -8:
-                key = key + 12
-            elif key > 8:
-                key = key - 12
+            while key < -8 or key > 8:
+                if key < -8:
+                    key = key + 12
+                elif key > 8:
+                    key = key - 12
             bass_audio = self.pitch_shift(bass_audio, key)
             other_audio = self.pitch_shift(other_audio, key)
 
