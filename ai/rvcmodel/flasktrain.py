@@ -32,7 +32,7 @@ app = Flask(__name__)
 #request json 예시
 # {
 #     "modelcode" : 1
-#     "exp_dir1" : "jeongminjeongmin",
+#     "exp_dir1" : "movetest1",
 #     "sr2" : "48k",
 #     "if_f0_3" : "True",
 #     "trainset_dir4" :  "C:\\Users\\SSAFY\\Desktop\\minijeongmin",
@@ -40,7 +40,7 @@ app = Flask(__name__)
 #     "np7" : 8,
 #     "f0method8" : "harvest",
 #     "save_epoch10" : 5,
-#     "total_epoch11" : 20,
+#     "total_epoch11" : 10,
 #     "batch_size12" : 4,
 #     "if_save_latest13" : "Yes",
 #     "pretrained_G14" : "assets/pretrained_v2/f0G48k.pth",
@@ -59,6 +59,7 @@ def training():
     data = request.json
 
     modelcode = data['modelcode']
+    usercode = data['usercode']
     exp_dir1 = data['exp_dir1']
     sr2 = data['sr2']
     if_f0_3 = data['if_f0_3']
@@ -80,9 +81,9 @@ def training():
 
 
     onetrain.train1key(         
-        exp_dir1, sr2, if_f0_3, trainset_dir4, spk_id5, np7, f0method8, save_epoch10,
-        total_epoch11, batch_size12, if_save_latest13, pretrained_G14, pretrained_D15,
-        gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe, modelcode
+        modelcode, exp_dir1, sr2, if_f0_3, trainset_dir4, spk_id5, np7, f0method8, 
+        save_epoch10, total_epoch11, batch_size12, if_save_latest13, pretrained_G14, pretrained_D15,
+        gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe
     )
     
     

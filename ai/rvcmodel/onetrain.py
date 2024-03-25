@@ -514,6 +514,7 @@ def train_index(exp_dir1, version19):
     
 
 def train1key(
+    modelcode,
     exp_dir1,
     sr2,
     if_f0_3,
@@ -534,6 +535,8 @@ def train1key(
     gpus_rmvpe,
 ):
     infos = []
+
+    os.makedirs(os.path.join(now_dir, "model"), exist_ok=True)
 
     def get_info_str(strr):
         infos.append(strr)
@@ -576,7 +579,15 @@ def train1key(
     # step3b:训练索引
     [get_info_str(_) for _ in train_index(exp_dir1, version19)]
 
+    # step4:저장된 pth 파일 이동 (assets/weights/{name}.pth -> model/{modelcode}/pth.pth)
+    # 기존에 위치해 있던 pth 파일 path2 경로로 복붙 후 이름 변경
     
-    #저장된 pth 파일 이동 (assets/weights/{name}.pth -> model/{modelcode}/pth.pth)
-    
+    path1 = "assets/weights"
+    path2 = f'model/{modelcode}'
+    os.makedirs(path2, exist_ok=True)
+
+    filename = f"{exp_dir1}.pth"
+    shutil.copy(os.path.join(path1, filename), os.path.join(path2, filename))
+    shutil.move(f'model/{modelcode}/{exp_dir1}.pth', f'model/{modelcode}/pth.pth')
+
 
