@@ -86,7 +86,7 @@ class Creator:
                         opt_path=inferred,
                         model_path=pth,
                         index_rate=0.6,
-                        device="cuda:9",
+                        device="cuda:0",
                         is_half=True)
         
         inf.run()

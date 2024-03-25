@@ -47,7 +47,7 @@ def singleton_variable(func):
 
 @singleton_variable
 class Config:
-    def __init__(self, device="cuda:9"):
+    def __init__(self, device="cuda:0"):
         self.device = device
         self.is_half = True
         self.use_jit = False

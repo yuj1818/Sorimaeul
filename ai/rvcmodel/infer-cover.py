@@ -54,7 +54,7 @@ def create_cover(request: Request):
         upload = {'file': file}
         
         logger.info("Cover upload")
-        response = requests.post(f"https://j10e201.p.ssafy.io/api/cover/{coverCode}", files=upload)
+        response = requests.post(f"https://j10e201.p.ssafy.io/api/cover/save/{coverCode}", files=upload)
         response.raise_for_status()
         
         logger.info(f"Response status {response.status_code}")

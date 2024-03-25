@@ -27,7 +27,7 @@ app.add_middleware(
 )
 
 
-# 음성 추론 요청
+# 음성 변환 요청
 @app.post("/rvc/infer/{userCode}/{dubCode}/{voiceIndex}/{modelCode}/{pitch}")
 async def infer(userCode: int, dubCode: int, voiceIndex: str, modelCode: int, pitch: int, file: UploadFile):
     file_path = f"{dubbing_path}/{userCode}/{dubCode}/{voiceIndex}/{modelCode}"
@@ -50,7 +50,7 @@ async def infer(userCode: int, dubCode: int, voiceIndex: str, modelCode: int, pi
     except Exception as e:
         logger.info(f"Error occured: {e}")
         return {"status": 500,
-                "message": "음성 추론에 실패했습니다."}
+                "message": "음성 변환에 실패했습니다."}
 
 
 if __name__ == '__main__':
