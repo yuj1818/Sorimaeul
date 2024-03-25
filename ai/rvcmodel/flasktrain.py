@@ -2,10 +2,14 @@ from flask import Flask, request
 import os
 import onetrain
 
+import threading
+from queue import Queue
+
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
 # os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
 
 app = Flask(__name__)
+queue = Queue()
 
 # input 값 정리
 # modelcode : 몇번 모델인지 가르킴 (숫자)
@@ -52,6 +56,21 @@ app = Flask(__name__)
 #     "gpus_rmvpe" : "0"
 # }
 
+def worker():
+    while True:
+        item = queue.get()
+        if item is None:
+            break
+        modelcode, usercode, exp_dir1, sr2, if_f0_3, trainset_dir4, spk_id5, np7, f0method8,save_epoch10, total_epoch11, batch_size12, if_save_latest13, pretrained_G14, pretrained_D15, gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe = item
+
+        onetrain.train1key(         
+            modelcode, exp_dir1, sr2, if_f0_3, trainset_dir4, spk_id5, np7, f0method8, 
+            save_epoch10, total_epoch11, batch_size12, if_save_latest13, pretrained_G14, pretrained_D15,
+            gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe
+        )
+        queue.task_done()
+
+
 @app.route('/training', methods=['POST'])
 def training():
     # 여기서 요청에 따라 다른 값 주면 됨   
@@ -79,19 +98,16 @@ def training():
     version19 = data['version19']
     gpus_rmvpe = data['gpus_rmvpe']
 
-
-    onetrain.train1key(         
-        modelcode, exp_dir1, sr2, if_f0_3, trainset_dir4, spk_id5, np7, f0method8, 
+    queue.put(( modelcode, usercode, exp_dir1, sr2, if_f0_3, trainset_dir4, spk_id5, np7, f0method8, 
         save_epoch10, total_epoch11, batch_size12, if_save_latest13, pretrained_G14, pretrained_D15,
-        gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe
-    )
-    
-    
-    return 'Success' 
+        gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe))
+        
+    return {"message": "Training is ready"}, 200
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    threading.Thread(target=worker).start()
+    app.run(host='0.0.0.0', port=7865, debug=True)
 
 
 
