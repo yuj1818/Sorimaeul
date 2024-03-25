@@ -6,7 +6,6 @@ import os,sys,pdb,torch
 # sys.path.append(now_dir)
 # import argparse
 # import glob
-import sys
 import torch
 # from multiprocessing import cpu_count
 from infer.modules.vc.modules2 import VC
@@ -26,8 +25,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
-# os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 9 to use
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
+os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 9 to use
 
 # class Config:
 #     def __init__(self,device,is_half):
