@@ -18,6 +18,11 @@ except Exception:  # pylint: disable=broad-exception-caught
     pass
 import logging
 
+import os
+
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
+os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 9 to use
+
 logger = logging.getLogger(__name__)
 
 
