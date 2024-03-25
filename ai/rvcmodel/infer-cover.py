@@ -85,7 +85,7 @@ def create_cover(request: Request):
     
     finally:
         # 알림 전송
-        sendNotification(userCode, msg)
+        sendNotification(userCode, coverCode, msg)
 
         # 폴더 삭제
         if os.path.exists(f"{cover_path}/{userCode}/{coverCode}"):
@@ -96,11 +96,16 @@ def create_cover(request: Request):
 
 
 # 알림 전송
-def sendNotification(userCode, msg):
+def sendNotification(userCode, targetCode, msg):
     logger.info("Send notification")
     try:
         response = requests.post(f"https://j10e201.p.ssafy.io/api/sse/notify",
-                                 json={"userCode":userCode, "data":msg})
+                                 json={"userCode":userCode,
+                                       "name":"cover",
+                                       "data": {
+                                           "targetCode":targetCode,
+                                           "content":msg
+                                           }})
         logger.info(f"Response status {response.status_code}")
     except requests.exceptions.RequestException as e:
         logger.info(f"Error occurred: {e}")
