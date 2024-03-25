@@ -2,6 +2,7 @@ from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
+from moviepy.editor import VideoFileClip, AudioFileClip, CompositeAudioClip
 
 import os, shutil
 import requests
@@ -33,8 +34,11 @@ class Request(BaseModel):
 
 
 # 더빙 영상 제작
-def create_dubbing(request):
-    
+def create_dubbing(request: Request):
+    userCode = request.userCode
+    dubCode = request.dubCode
+    videoSourceCode = request.videoSourceCode
+    inferredVoice = request.inferredVoice
     return
 
 
