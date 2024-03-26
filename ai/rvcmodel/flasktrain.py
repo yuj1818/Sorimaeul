@@ -80,12 +80,12 @@ def worker():
         item = queue.get()
         if item is None:
             break
-        modelcode, usercode, exp_dir1, sr2, if_f0_3, trainset_dir4, spk_id5, np7, f0method8,save_epoch10, total_epoch11, batch_size12, if_save_latest13, pretrained_G14, pretrained_D15, gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe = item
+        modelcode, usercode, exp_dir1,  trainset_dir4 = item
 
         onetrain.train1key(         
-            modelcode, exp_dir1, sr2, if_f0_3, trainset_dir4, spk_id5, np7, f0method8, 
-            save_epoch10, total_epoch11, batch_size12, if_save_latest13, pretrained_G14, pretrained_D15,
-            gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe
+            modelcode, exp_dir1, "48k" , "True", trainset_dir4, 0, 8, "harvest", 
+            5, 10, 4, "Yes", "assets/pretrained_v2/f0G48k.pth", "assets/pretrained_v2/f0D48k.pth",
+            "9", "No", "No", "v2","0"
         )
 
         sendNotification(usercode,modelcode,"모델학습이 완료되었습니다")
@@ -101,27 +101,10 @@ def training():
     modelcode = data['modelcode']
     usercode = data['usercode']
     exp_dir1 = data['exp_dir1']
-    sr2 = data['sr2']
-    if_f0_3 = data['if_f0_3']
     trainset_dir4 = data['trainset_dir4']
-    spk_id5 = data['spk_id5']
-    np7 = data['np7']
-    f0method8 = data['f0method8']
-    save_epoch10 = data['save_epoch10']
-    total_epoch11 = data['total_epoch11']
-    batch_size12 = data['batch_size12']
-    if_save_latest13 = data['if_save_latest13']
-    pretrained_G14 = data['pretrained_G14']
-    pretrained_D15 = data['pretrained_D15']
-    gpus16 = data['gpus16']
-    if_cache_gpu17 = data['if_cache_gpu17']
-    if_save_every_weights18 = data['if_save_every_weights18']
-    version19 = data['version19']
-    gpus_rmvpe = data['gpus_rmvpe']
 
-    queue.put(( modelcode, usercode, exp_dir1, sr2, if_f0_3, trainset_dir4, spk_id5, np7, f0method8, 
-        save_epoch10, total_epoch11, batch_size12, if_save_latest13, pretrained_G14, pretrained_D15,
-        gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe))
+
+    queue.put(( modelcode, usercode, exp_dir1,trainset_dir4))
         
     return {"message": "Training is ready"}, 200
 
