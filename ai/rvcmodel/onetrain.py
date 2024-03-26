@@ -125,6 +125,8 @@ def preprocess_dataset(trainset_dir, exp_dir, sr, n_p):
     with open("%s/logs/%s/preprocess.log" % (now_dir, exp_dir), "r") as f:
         log = f.read()
     logger.info(log)
+    p.wait()
+    p.terminate()
     yield log
 
 def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvpe):
@@ -215,6 +217,8 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
         with open("%s/logs/%s/extract_f0_feature.log" % (now_dir, exp_dir), "r") as f:
             log = f.read()
         logger.info(log)
+        p.wait()
+        p.terminate()
         yield log
     # 对不同part分别开多进程
     """
@@ -264,6 +268,8 @@ def extract_f0_feature(gpus, n_p, f0method, if_f0, exp_dir, version19, gpus_rmvp
     with open("%s/logs/%s/extract_f0_feature.log" % (now_dir, exp_dir), "r") as f:
         log = f.read()
     logger.info(log)
+    p.wait()
+    p.terminate()
     yield log
 
 def click_train(
@@ -413,6 +419,7 @@ def click_train(
     logger.info("Execute: " + cmd)
     p = Popen(cmd, shell=True, cwd=now_dir)
     p.wait()
+    p.terminate()
     return "训练结束, 您可查看控制台训练日志或实验文件夹下的train.log"
 
 def train_index(exp_dir1, version19):
