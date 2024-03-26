@@ -1,6 +1,8 @@
 from flask import Flask, request
 import os
 import onetrain
+import requests
+import logging
 
 import threading
 from queue import Queue
@@ -9,6 +11,8 @@ from queue import Queue
 # os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
 
 app = Flask(__name__)
+
+logger = logging.getLogger(__name__)
 queue = Queue()
 
 # input 값 정리
@@ -26,7 +30,7 @@ queue = Queue()
 # if_save_latest13 : "Yes" 고정 (是로 설정해야 불필요한 파일 저장되지 않음)
 # pretrained_G14 : assets/pretrained_v2/f0G40k.pth 고정 (미리 훈련된 G모델 경로)
 # pretrained_D15 : assets/pretrained_v2/f0D40k.pth 고정 (미리 훈련된 D 모델 경로)
-# gpus16 : 0 고정   (사용할 그래픽 카드 설정, 우리 서버 기준 0 박혀 있음)
+# gpus16 : 9 고정   (사용할 그래픽 카드 설정, 우리 서버 기준 0 박혀 있음)
 # if_cache_gpu17 : "No" 고정  (Yes 설정하면 오류 발생 위험있음)
 # if_save_every_weights18 : "No 고정" (저장시 마다 모델 저장 여부 결정, Yes 설정하면 용량 낭비)
 # version19 :  "v2" 고정   (모델 버전 선택)
@@ -35,26 +39,41 @@ queue = Queue()
 
 #request json 예시
 # {
-#     "modelcode" : 1
-#     "exp_dir1" : "movetest1",
+#     "modelcode" :12,
+#     "usercode" : 1,
+#     "exp_dir1" : "joowon",
 #     "sr2" : "48k",
 #     "if_f0_3" : "True",
-#     "trainset_dir4" :  "C:\\Users\\SSAFY\\Desktop\\minijeongmin",
+#     "trainset_dir4" :  "/home/j-j10e201/joowon",
 #     "spk_id5" : 0,
-#     "np7" : 8,
+#     "np7" : 16,
 #     "f0method8" : "harvest",
 #     "save_epoch10" : 5,
-#     "total_epoch11" : 10,
-#     "batch_size12" : 4,
+#     "total_epoch11" : 100,
+#     "batch_size12" : 8,
 #     "if_save_latest13" : "Yes",
 #     "pretrained_G14" : "assets/pretrained_v2/f0G48k.pth",
 #     "pretrained_D15" : "assets/pretrained_v2/f0D48k.pth",
-#     "gpus16" : "0",
+#     "gpus16" : "9",
 #     "if_cache_gpu17" : "No",
 #     "if_save_every_weights18" : "No",
 #     "version19" : "v2",
 #     "gpus_rmvpe" : "0"
 # }
+
+def sendNotification(userCode, targetCode, msg):
+    logger.info("Send notification")
+    try:
+        response = requests.post(f"https://j10e201.p.ssafy.io/api/sse/notify",
+                                 json={"userCode":userCode,
+                                       "name":"train",
+                                       "data": {
+                                           "targetCode":targetCode,
+                                           "content":msg
+                                           }})
+        logger.info(f"Response status {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        logger.info(f"Error occurred: {e}")
 
 def worker():
     while True:
@@ -68,6 +87,8 @@ def worker():
             save_epoch10, total_epoch11, batch_size12, if_save_latest13, pretrained_G14, pretrained_D15,
             gpus16, if_cache_gpu17, if_save_every_weights18, version19, gpus_rmvpe
         )
+
+        sendNotification(usercode,modelcode,"모델학습이 완료되었습니다")
         queue.task_done()
 
 
