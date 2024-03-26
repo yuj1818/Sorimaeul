@@ -22,15 +22,16 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-root_path = "/home/ubuntu/sorimaeul-data/dub"
+cur_dir = os.getcwd()
+root_path = f"{cur_dir}/sorimaeul-data/dub"
 
 
 class Request(BaseModel):
     userCode: int
     dubCode: int
     videoSourceCode: int
-    inferredVoice: List[bool]
+    inferredVoice: List[int]
+    dubName: str
 
 
 # 더빙 영상 제작
@@ -39,7 +40,54 @@ def create_dubbing(request: Request):
     dubCode = request.dubCode
     videoSourceCode = request.videoSourceCode
     inferredVoice = request.inferredVoice
-    return
+    dubName = request.dubName
+
+    try:
+        video_file = f"{root_path}/source_{videoSourceCode}/origin/video/video.mp4"
+        audio_origin_path = f"{root_path}/source_{videoSourceCode}/origin/audio"
+        audio_recorded_path = f"{root_path}/source_{videoSourceCode}/user_{userCode}/Unconverted"
+        audio_inferred_path = f"{root_path}/source_{videoSourceCode}/user_{userCode}/Converted"
+
+        output_path = f"{root_path}/source_{videoSourceCode}/dub_{dubCode}/dub_{dubCode}.mp4"
+
+        logger.info(f"Start create video: {root_path}/source_{videoSourceCode}/dub_{dubCode}/dub_{dubCode}.mp4")
+
+        video = VideoFileClip(video_file)
+        audio = video.audio
+
+        combine_audio = [audio]
+
+        for idx, flag in enumerate(inferredVoice):
+            if idx == 0:
+                pass
+
+            if flag == 0:
+                add_audio = f"{audio_origin_path}/{idx}.wav"
+            elif flag == 1:
+                add_audio = f"{audio_recorded_path}/{idx}.wav"
+            elif flag == 2:
+                add_audio = f"{audio_inferred_path}/{idx}.wav"
+            
+            combine_audio.append(AudioFileClip(add_audio))
+            
+        audio = CompositeAudioClip(combine_audio)
+
+        video = video.set_audio(audio)
+
+        video.write_videofile(output_path, codec='libx264', audio_codec='aac')
+        logger.info(f"Write video {output_path}")
+
+        msg = f'더빙 영상 "{dubName}" 생성이 완료되었습니다.'
+
+    except Exception as e:
+        logger.info(f"Error occured: {e}")
+        msg = f'더빙 영상 "{dubName}" 생성에 실패했습니다.'
+    
+    finally:
+        sendNotification(userCode, dubCode, msg)
+
+        shutil.rmtree(f"{root_path}/source_{videoSourceCode}/user_{userCode}")
+        logger.info(f"Remove {root_path}/source_{videoSourceCode}/user_{userCode}")
 
 
 # 알림 전송
