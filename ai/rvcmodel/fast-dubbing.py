@@ -79,15 +79,15 @@ def create_dubbing(request: Request):
 
         msg = f'더빙 영상 "{dubName}" 생성이 완료되었습니다.'
 
+        shutil.rmtree(f"{root_path}/source_{videoSourceCode}/user_{userCode}")
+        logger.info(f"Remove {root_path}/source_{videoSourceCode}/user_{userCode}")
+
     except Exception as e:
         logger.info(f"Error occured: {e}")
         msg = f'더빙 영상 "{dubName}" 생성에 실패했습니다.'
     
     finally:
         sendNotification(userCode, dubCode, msg)
-
-        shutil.rmtree(f"{root_path}/source_{videoSourceCode}/user_{userCode}")
-        logger.info(f"Remove {root_path}/source_{videoSourceCode}/user_{userCode}")
 
 
 # 알림 전송

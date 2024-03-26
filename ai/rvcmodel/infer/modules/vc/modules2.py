@@ -103,7 +103,7 @@ class VC:
                 "",
             )
 
-        self.cpt = torch.load(model_path, map_location="cpu")
+        self.cpt = torch.load(model_path, map_location="cuda:0")
         self.tgt_sr = self.cpt["config"][-1]
         self.cpt["config"][-3] = self.cpt["weight"]["emb_g.weight"].shape[0]  # n_spk
         self.if_f0 = self.cpt.get("f0", 1)

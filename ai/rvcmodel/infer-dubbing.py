@@ -28,9 +28,9 @@ app.add_middleware(
 
 
 # 음성 변환 요청
-@app.post("/rvc/infer/{userCode}/{dubCode}/{voiceIndex}/{modelCode}/{pitch}")
-async def infer(userCode: int, dubCode: int, voiceIndex: str, modelCode: int, pitch: int, file: UploadFile):
-    file_path = f"{dubbing_path}/{userCode}/{dubCode}/{voiceIndex}/{modelCode}"
+@app.post("/rvc/infer/{userCode}/{videoSourceCode}/{voiceIndex}/{modelCode}/{pitch}")
+async def infer(userCode: int, videoSourceCode: int, voiceIndex: str, modelCode: int, pitch: int, file: UploadFile):
+    file_path = f"{dubbing_path}/{userCode}/{videoSourceCode}/{voiceIndex}/{modelCode}"
     file_name = "voice_origin.wav"
 
     try:
