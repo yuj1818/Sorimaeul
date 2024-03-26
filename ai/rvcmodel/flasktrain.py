@@ -37,7 +37,6 @@ queue = Queue()
 # gpus_rmvpe : "0" 고정 (harvest 버전 사용하면 신경 쓸 필요 없는 값)
 # train 함수 실행
 
-#request json 예시
 # {
 #     "modelcode" :12,
 #     "usercode" : 1,
@@ -91,6 +90,20 @@ def worker():
         sendNotification(usercode,modelcode,"모델학습이 완료되었습니다")
         queue.task_done()
 
+# 음성 파일들 받아서 저장함
+@app.route('/voice/<int:modelcode>', methods=['POST'])
+def voiceupload(modelcode):
+    files = request.files
+    save_dir = f'voice/{modelcode}'
+    os.makedirs(save_dir, exist_ok=True)
+    
+    for idx, key in enumerate(files):
+        file = files[key]
+        file.save(os.path.join(save_dir, f"record{idx + 1}.wav"))
+    return {"message": "Voicefile upload complete"}, 200
+
+# 모델(pth) 파일을 받아서 저장함
+# @app.route("/upload")
 
 @app.route('/training', methods=['POST'])
 def training():
@@ -100,9 +113,10 @@ def training():
 
     modelcode = data['modelcode']
     usercode = data['usercode']
-    exp_dir1 = data['exp_dir1']
-    trainset_dir4 = data['trainset_dir4']
 
+    exp_dir1 = modelcode
+    path = f'voice/{modelcode}'
+    trainset_dir4 = path 
 
     queue.put(( modelcode, usercode, exp_dir1,trainset_dir4))
         
@@ -112,9 +126,6 @@ def training():
 if __name__ == '__main__':
     threading.Thread(target=worker).start()
     app.run(host='0.0.0.0', port=7865, debug=True)
-
-
-
 
 
 # @app.route('/train_start_all', methods=['POST'])
