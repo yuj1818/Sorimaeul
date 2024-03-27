@@ -1,4 +1,4 @@
-from fastapi import FastAPI,UploadFile, File
+from fastapi import FastAPI,UploadFile, File, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
@@ -10,8 +10,8 @@ from typing import List
 import threading
 from queue import Queue
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
-os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
+# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
+# os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
 
 app = FastAPI()
 
@@ -92,22 +92,6 @@ def sendNotification(userCode, targetCode, msg):
     except requests.exceptions.RequestException as e:
         logger.info(f"Error occurred: {e}")
 
-def worker():
-    while True:
-        item = queue.get()
-        if item is None:
-            break
-        modelcode, usercode, exp_dir1,  trainset_dir4 = item
-
-        onetrain.train1key(         
-            modelcode, exp_dir1, "48k" , "True", trainset_dir4, 0, 16, "harvest", 
-            5, 100, 8, "Yes", "assets/pretrained_v2/f0G48k.pth", "assets/pretrained_v2/f0D48k.pth",
-            "9", "No", "No", "v2","0"
-        )
-
-        sendNotification(usercode,modelcode,"모델학습이 완료되었습니다")
-        queue.task_done()
-
 # 음성 파일들 받아서 저장함
 @app.post('/voice/{modelcode}')
 async def voice_upload(modelcode: int, files: List[UploadFile] = File(...)):
@@ -133,24 +117,29 @@ async def modelupload(modelcode: int, file: UploadFile):
 
 # 보이스 모델 학습시작
 @app.post('/training')
-def training(request: Request):
-    # 여기서 요청에 따라 다른 값 주면 됨   
-
+async def training(request: Request, background_tasks: BackgroundTasks):
     modelcode = request.modelCode
     usercode = request.userCode
-
     exp_dir1 = modelcode
     path = f'voice/{modelcode}'
     trainset_dir4 = path 
+    
+    background_tasks.add_task(worker, modelcode, usercode, exp_dir1, trainset_dir4)
+    
+    return {"message": "Training is ready"}
 
-    queue.put(( modelcode, usercode, exp_dir1,trainset_dir4))
-        
-    return {"message": "Training is ready"}, 200
+def worker(modelcode, usercode, exp_dir1, trainset_dir4):
+    # 백그라운드에서 실행될 작업들
+    onetrain.train1key(         
+        modelcode, exp_dir1, "48k" , "True", trainset_dir4, 0, 16, "harvest", 
+        5, 100, 8, "Yes", "assets/pretrained_v2/f0G48k.pth", "assets/pretrained_v2/f0D48k.pth",
+        "9", "No", "No", "v2","0"
+    )
 
+    sendNotification(usercode, modelcode, "모델학습이 완료되었습니다")
 
 if __name__ == '__main__':
     import uvicorn
-    threading.Thread(target=worker).start()
     uvicorn.run(app=app, host='0.0.0.0', port=7865)
 
 
