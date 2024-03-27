@@ -18,8 +18,6 @@ import torch.nn.functional as F
 import torchcrepe
 from scipy import signal
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
-os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 9 to use
 
 now_dir = os.getcwd()
 sys.path.append(now_dir)

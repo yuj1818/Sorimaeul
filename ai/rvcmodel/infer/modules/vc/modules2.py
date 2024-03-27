@@ -20,9 +20,6 @@ from infer.modules.vc.utils import *
 
 import os
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
-os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 9 to use
-
 
 class VC:
     def __init__(self, config):

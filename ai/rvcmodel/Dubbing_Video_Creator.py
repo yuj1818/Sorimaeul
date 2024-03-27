@@ -1,11 +1,7 @@
 import myinfer as mif
-
 import os
-
 import logging
 
-os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
-os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 9 to use
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +29,6 @@ class Infer:
                         opt_path=inferred,
                         model_path=pth,
                         index_rate=0.6,
-                        device="cuda:0",
                         is_half=True)
         
         inf.run()
