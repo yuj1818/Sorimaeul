@@ -31,7 +31,7 @@ app.add_middleware(
 
 
 class Request(BaseModel):
-    youtubeURL: str
+    youtubeLink: str
     userCode: int
     modelCode: int
     coverCode: int
@@ -44,6 +44,7 @@ def create_cover(request: Request):
     userCode = request.userCode
     coverCode = request.coverCode
     coverName = request.coverName
+    file = None
 
     try:
         # 커버 제작
@@ -89,7 +90,7 @@ def create_cover(request: Request):
 
         # 폴더 삭제
         if os.path.exists(f"{cover_path}/{userCode}/{coverCode}"):
-            if file:
+            if file is not None and not file.closed:
                 file.close()
             shutil.rmtree(f"{cover_path}/{userCode}/{coverCode}")
             logger.info(f"Remove {cover_path}/{userCode}/{coverCode}")

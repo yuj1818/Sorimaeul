@@ -22,8 +22,8 @@ model_path = f"{cur_dir}/model"
 class Creator:
 
     def __init__(self, request):
-        global youtubeURL, userCode, modelCode, coverCode, coverName, pitch
-        youtubeURL = request.youtubeURL
+        global youtubeLink, userCode, modelCode, coverCode, coverName, pitch
+        youtubeLink = request.youtubeLink
         userCode = request.userCode
         modelCode = request.modelCode
         coverCode = request.coverCode
@@ -41,7 +41,7 @@ class Creator:
 
     # 유튜브 음원 다운로드
     def download(self):
-        yt = YouTube(youtubeURL)
+        yt = YouTube(youtubeLink)
         yt.check_availability()
 
         if yt.length > 600:
