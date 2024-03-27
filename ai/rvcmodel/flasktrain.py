@@ -82,8 +82,8 @@ def worker():
         modelcode, usercode, exp_dir1,  trainset_dir4 = item
 
         onetrain.train1key(         
-            modelcode, exp_dir1, "48k" , "True", trainset_dir4, 0, 8, "harvest", 
-            5, 10, 4, "Yes", "assets/pretrained_v2/f0G48k.pth", "assets/pretrained_v2/f0D48k.pth",
+            modelcode, exp_dir1, "48k" , "True", trainset_dir4, 0, 16, "harvest", 
+            5, 100, 8, "Yes", "assets/pretrained_v2/f0G48k.pth", "assets/pretrained_v2/f0D48k.pth",
             "9", "No", "No", "v2","0"
         )
 
@@ -103,8 +103,18 @@ def voiceupload(modelcode):
     return {"message": "Voicefile upload complete"}, 200
 
 # 모델(pth) 파일을 받아서 저장함
-# @app.route("/upload")
+@app.route('/model/<int:modelcode>', methods=['POST'])
+def modelupload(modelcode):
+    files = request.files
+    save_dir = f'model/{modelcode}'
+    os.makedirs(save_dir, exist_ok=True)
+    
+    for idx,key in enumerate(files):
+        file = files[key]
+        file.save(os.path.join(save_dir, f"pth.pth"))
+    return {"message": "Model upload complete"}, 200
 
+# 보이스 모델 학습시작
 @app.route('/training', methods=['POST'])
 def training():
     # 여기서 요청에 따라 다른 값 주면 됨   
