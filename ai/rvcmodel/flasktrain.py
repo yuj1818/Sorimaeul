@@ -1,16 +1,34 @@
-from flask import Flask, request
+from fastapi import FastAPI,UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 import os
 import onetrain
 import requests
 import logging
+from typing import List 
 
 import threading
 from queue import Queue
 
-# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
-# os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
+os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
 
-app = Flask(__name__)
+app = FastAPI()
+
+class Request(BaseModel):
+    userCode: int
+    modelCode: int
+
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 logger = logging.getLogger(__name__)
 queue = Queue()
@@ -91,38 +109,35 @@ def worker():
         queue.task_done()
 
 # 음성 파일들 받아서 저장함
-@app.route('/voice/<int:modelcode>', methods=['POST'])
-def voiceupload(modelcode):
-    files = request.files
+@app.post('/voice/{modelcode}')
+async def voice_upload(modelcode: int, files: List[UploadFile] = File(...)):
     save_dir = f'voice/{modelcode}'
     os.makedirs(save_dir, exist_ok=True)
     
-    for idx, key in enumerate(files):
-        file = files[key]
-        file.save(os.path.join(save_dir, f"record{idx + 1}.wav"))
-    return {"message": "Voicefile upload complete"}, 200
+    for idx, file in enumerate(files):
+        with open(os.path.join(save_dir, f"record{idx + 1}.wav"), "wb") as f:
+            f.write(await file.read())
+    
+    return {"message": "Voicefile upload complete"}
 
 # 모델(pth) 파일을 받아서 저장함
-@app.route('/model/<int:modelcode>', methods=['POST'])
-def modelupload(modelcode):
-    files = request.files
+@app.post('/model/{modelcode}')
+async def modelupload(modelcode: int, file: UploadFile):
     save_dir = f'model/{modelcode}'
     os.makedirs(save_dir, exist_ok=True)
     
-    for idx,key in enumerate(files):
-        file = files[key]
-        file.save(os.path.join(save_dir, f"pth.pth"))
-    return {"message": "Model upload complete"}, 200
+    with open(os.path.join(save_dir, f"pth.pth"), "wb") as f:
+        f.write(await file.read())
+    
+    return {"message": "Model upload complete"}
 
 # 보이스 모델 학습시작
-@app.route('/training', methods=['POST'])
-def training():
+@app.post('/training')
+def training(request: Request):
     # 여기서 요청에 따라 다른 값 주면 됨   
 
-    data = request.json
-
-    modelcode = data['modelcode']
-    usercode = data['usercode']
+    modelcode = request.modelCode
+    usercode = request.userCode
 
     exp_dir1 = modelcode
     path = f'voice/{modelcode}'
@@ -134,8 +149,9 @@ def training():
 
 
 if __name__ == '__main__':
+    import uvicorn
     threading.Thread(target=worker).start()
-    app.run(host='0.0.0.0', port=7865, debug=True)
+    uvicorn.run(app=app, host='0.0.0.0', port=7865)
 
 
 # @app.route('/train_start_all', methods=['POST'])
