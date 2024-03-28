@@ -5,13 +5,13 @@ from pytube import YouTube
 # from simple_diarizer.utils import convert_wavfile
 from moviepy.editor import VideoFileClip, AudioFileClip
 
-import os
+import os, sys
 # import tempfile
 # import librosa
 # import soundfile as sf
 
-youtubeURL = ""
-name = ""
+youtubeURL = sys.argv[1]
+name = sys.argv[2]
 
 # app = FastAPI()
 
