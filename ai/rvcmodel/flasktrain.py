@@ -92,6 +92,19 @@ def sendNotification(userCode, targetCode, msg):
     except requests.exceptions.RequestException as e:
         logger.info(f"Error occurred: {e}")
 
+import wave   
+  
+"""   
+    get wav file length   
+    return (sec)   
+"""   
+def get_duration(audio_path):   
+    audio = wave.open(audio_path)
+    frames = audio.getnframes()   
+    rate = audio.getframerate()   
+    duration = frames / float(rate)   
+    return duration
+
 # 음성 파일들 받아서 저장함
 @app.post('/voice/{modelcode}')
 async def voice_upload(modelcode: int, files: List[UploadFile] = File(...)):
