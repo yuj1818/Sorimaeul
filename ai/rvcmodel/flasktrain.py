@@ -5,9 +5,9 @@ import os
 import onetrain
 import requests
 import logging
+import librosa
 from typing import List 
 
-import threading
 from queue import Queue
 
 # os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
@@ -92,19 +92,6 @@ def sendNotification(userCode, targetCode, msg):
     except requests.exceptions.RequestException as e:
         logger.info(f"Error occurred: {e}")
 
-import wave   
-  
-"""   
-    get wav file length   
-    return (sec)   
-"""   
-def get_duration(audio_path):   
-    audio = wave.open(audio_path)
-    frames = audio.getnframes()   
-    rate = audio.getframerate()   
-    duration = frames / float(rate)   
-    return duration
-
 # 음성 파일들 받아서 저장함
 @app.post('/voice/{modelcode}')
 async def voice_upload(modelcode: int, files: List[UploadFile] = File(...)):
@@ -136,17 +123,39 @@ async def training(request: Request, background_tasks: BackgroundTasks):
     exp_dir1 = modelcode
     path = f'voice/{modelcode}'
     trainset_dir4 = path 
-    
-    background_tasks.add_task(worker, modelcode, usercode, exp_dir1, trainset_dir4)
-    
-    return {"message": "Training is ready"}
+    total_epoch11 = 0
 
-def worker(modelcode, usercode, exp_dir1, trainset_dir4):
+    
+    background_tasks.add_task(worker, modelcode, usercode, exp_dir1, trainset_dir4, total_epoch11)
+    
+    return {"message": f"Training is ready"}
+
+
+def worker(modelcode, usercode, exp_dir1, trainset_dir4, total_epoch11):
     # 백그라운드에서 실행될 작업들
+    time = 0
+    path = f'voice/{modelcode}'
+    sample_rate = 16000
+    file_list =os.listdir(path)
+    file_list.sort() 
+    
+    for i in file_list:
+        audio_path = path + "/" + i
+        y, sr = librosa.load(audio_path, sr=sample_rate)
+        duration = librosa.get_duration(y=y, sr=sr)
+        time += round(duration)
+    
+    total_epoch11 = 100 + ((round(time/60)*round(time/60))/2)
+    
+    total_epoch11 = round(total_epoch11)
+    
+    if(total_epoch11 > 200):
+        total_epoch11 = 200
+    
     onetrain.train1key(         
-        modelcode, exp_dir1, "48k" , "True", trainset_dir4, 0, 16, "harvest", 
-        5, 100, 8, "Yes", "assets/pretrained_v2/f0G48k.pth", "assets/pretrained_v2/f0D48k.pth",
-        "9", "No", "No", "v2","0"
+    modelcode, exp_dir1, "48k" , "True", trainset_dir4, 0, 16, "harvest", 
+    5, total_epoch11, 8, "Yes", "assets/pretrained_v2/f0G48k.pth", "assets/pretrained_v2/f0D48k.pth",
+    "9", "No", "No", "v2","0"
     )
 
     sendNotification(usercode, modelcode, "모델학습이 완료되었습니다")
