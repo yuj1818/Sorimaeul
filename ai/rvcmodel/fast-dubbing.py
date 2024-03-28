@@ -77,10 +77,12 @@ def create_dubbing(request: Request):
         video.write_videofile(output_path, codec='libx264', audio_codec='aac')
         logger.info(f"Write video {output_path}")
 
+        response = requests.post("https://j10e201.p.ssafy.io/api/dub/save",
+                                 json={"dubCode":dubCode, "path":output_path})
+        response.raise_for_status()
+        
+        logger.info(f"Response status {response.status_code}")
         msg = f'더빙 영상 "{dubName}" 생성이 완료되었습니다.'
-
-        shutil.rmtree(f"{root_path}/source_{videoSourceCode}/user_{userCode}")
-        logger.info(f"Remove {root_path}/source_{videoSourceCode}/user_{userCode}")
 
     except Exception as e:
         logger.info(f"Error occured: {e}")
