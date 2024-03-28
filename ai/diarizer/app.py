@@ -10,7 +10,10 @@ import tempfile
 import librosa
 import soundfile as sf
 
-app = FastAPI()
+youtubeURL = ""
+name = ""
+
+# app = FastAPI()
 
 root_path = r'./youtube'
 
@@ -19,8 +22,10 @@ class DataInput(BaseModel):
     name: str
     num: int
 
-@app.post('/diarizer')
-def dializer(request: DataInput):
+data = DataInput(youtubeURL=youtubeURL, name=name, num=1)
+
+# @app.post('/diarizer')
+def diarizer(request: DataInput):
     print('start diarizer')
 
     youtubeURL = request.youtubeURL
@@ -117,5 +122,6 @@ def diarize(name, num):
     print('finish diarizing')
 
 if __name__ == '__main__':
-    import uvicorn
-    uvicorn.run(app=app, host='0.0.0.0', port=7654)
+    # import uvicorn
+    # uvicorn.run(app=app, host='0.0.0.0', port=7654)
+    diarizer(data)
