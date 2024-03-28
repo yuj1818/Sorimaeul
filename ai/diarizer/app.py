@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from pytube import YouTube
 from simple_diarizer.diarizer import Diarizer
 from simple_diarizer.utils import convert_wavfile
+from moviepy.editor import VideoFileClip, AudioFileClip
 
 import os
 import tempfile
@@ -30,7 +31,19 @@ def dializer(request: DataInput):
 
     split(name)
 
-    diarize(name, num)
+    # diarize(name, num)
+
+    video = VideoFileClip(f"{root_path}/{name}/{name}_video_only.mp4")
+    audio = AudioFileClip(f"{root_path}/{name}/accompaniment.wav")
+
+    video = video.set_audio(audio)
+
+    video.write_videofile(f"{root_path}/{name}/{name}_video.mp4", codec='libx264', audio_codec='aac')
+
+    os.remove(f"{root_path}/{name}/accompaniment.wav")
+    os.remove(f"{root_path}/{name}/{name}.wav")
+    os.remove(f"{root_path}/{name}/{name}_video_only.mp4")
+    os.rename(f"{root_path}/{name}/vocals.wav", f"{root_path}/{name}/{name}_voice.wav")
 
     print('finish diarizer')
     
@@ -44,7 +57,7 @@ def download(youtubeURL, name):
     yt.streams.filter(progressive=True, file_extension="mp4").order_by('resolution').desc().first().download(filename=f'{name}_origin.mp4', output_path=f'{root_path}/{name}')
 
     # 영상만 다운로드
-    yt.streams.filter(adaptive=True, file_extension="mp4", only_video=True).order_by('resolution').desc().first().download(filename=f'{name}_video.mp4', output_path=f'{root_path}/{name}')
+    yt.streams.filter(adaptive=True, file_extension="mp4", only_video=True).order_by('resolution').desc().first().download(filename=f'{name}_video_only.mp4', output_path=f'{root_path}/{name}')
 
     # 오디오만 다운로드
     yt.streams.filter(adaptive=True, file_extension="mp4", only_audio=True).first().download(filename=f'{name}.wav', output_path=f'{root_path}/{name}')
