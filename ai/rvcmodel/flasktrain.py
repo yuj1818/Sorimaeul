@@ -10,8 +10,8 @@ from typing import List
 
 from queue import Queue
 
-# os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
-# os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
+os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
+os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 2 to use
 
 app = FastAPI()
 
@@ -81,7 +81,7 @@ queue = Queue()
 def sendNotification(userCode, targetCode, msg):
     logger.info("Send notification")
     try:
-        response = requests.post(f"https://j10e201.p.ssafy.io/api/sse/notify",
+        response = requests.post(f"https://j10e201.p.ssafy.io/api/notify/send",
                                  json={"userCode":userCode,
                                        "name":"train",
                                        "data": {
