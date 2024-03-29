@@ -81,7 +81,7 @@ queue = Queue()
 def sendNotification(userCode, targetCode, msg):
     logger.info("Send notification")
     try:
-        response = requests.post(f"https://j10e201.p.ssafy.io/api/sse/notify",
+        response = requests.post(f"https://j10e201.p.ssafy.io/api/notify/send",
                                  json={"userCode":userCode,
                                        "name":"train",
                                        "data": {
