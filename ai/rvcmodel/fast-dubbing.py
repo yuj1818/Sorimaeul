@@ -39,7 +39,7 @@ class Request(BaseModel):
     voiceURL: List[str]
     
 
-# 
+# S3 서버에서 파일 다운로드
 def download_file(url: str, filename: str):
     with open(filename, 'wb') as f:
         response = requests.get(f"{s3_url}/{url}")
@@ -62,28 +62,30 @@ def create_dubbing(request: Request):
     try:
         dub_path = f"{root_path}/{dubCode}"
         video_file = f"{dub_path}/video.mp4"
+
+        os.makedirs(dub_path, exist_ok=True)
+
         download_file(videoURL, video_file)
 
-        video = VideoFileClip(video_file)
-        audio = video.audio
+        video = VideoFileClip(video_file).write_videofile()
 
-        combine_audio = [audio]
+        combine_audio = [video.audio]
 
         for idx, voice_url in enumerate(voiceURL):
             voice_file = f"{dub_path}/voice_{idx}.mp3"
             download_file(voice_url, voice_file)
-            voice = AudioFileClip(voice_file)
-            combine_audio.append(voice)
+            combine_audio.append(AudioFileClip(voice_file))
             
         audio = CompositeAudioClip(combine_audio)
 
         video = video.set_audio(audio)
 
-        video.write_videofile(dub_path, codec='libx264', audio_codec='aac')
-        logger.info(f"Write video {dub_path}")
+        dub_file = f"{dub_path}/dub_{dubCode}.mp4"
+        video.write_videofile(dub_file, codec='libx264', audio_codec='libmp3lame')
+        logger.info(f"Write video {dub_file}")
 
         response = requests.post("https://j10e201.p.ssafy.io/api/dub/save",
-                                 json={"dubCode":dubCode, "path":dub_path})
+                                 json={"dubCode":dubCode, "path":dub_file})
         response.raise_for_status()
         
         logger.info(f"Response status {response.status_code}")
