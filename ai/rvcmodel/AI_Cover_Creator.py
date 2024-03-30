@@ -79,7 +79,7 @@ class Creator:
         inf = mif.infer(f0up_key=pitch,
                         input_path=vocals,
                         index_path=index,
-                        f0method="harvest",
+                        f0method="rmvpe",
                         opt_path=inferred,
                         model_path=pth,
                         index_rate=0.6,
