@@ -42,7 +42,7 @@ class Request(BaseModel):
 # S3 서버에서 파일 다운로드
 def download_file(url: str, filename: str):
     with open(filename, 'wb') as f:
-        response = requests.get(f"{s3_url}/{url}")
+        response = requests.get(f"{s3_url}{url}")
         if response.status_code == 200:
             f.write(response.content)
         else:
