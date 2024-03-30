@@ -25,7 +25,7 @@ class Infer:
         inf = mif.infer(f0up_key=pitch,
                         input_path=origin_file,
                         index_path=index,
-                        f0method="rmvpe",
+                        f0method="harvest",
                         opt_path=inferred,
                         model_path=pth,
                         index_rate=0.6,
