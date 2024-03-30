@@ -119,7 +119,7 @@ def sendNotification(userCode, targetCode, msg):
         logger.info(f"Error occurred: {e}")
 
 
-@app.get("/create-dubbing")
+@app.post("/create-dubbing")
 def create(request, background_tasks: BackgroundTasks):
     background_tasks.add_task(create_dubbing, request)
     return {"status": 200, "message": "Process accepted"}
