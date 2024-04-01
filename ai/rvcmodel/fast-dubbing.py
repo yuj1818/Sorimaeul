@@ -99,7 +99,7 @@ def create_dubbing(request: Request):
         is_success = "false"
     
     finally:
-        # 커버 생성 여부 전송
+        # 더빙 영상 생성 여부 전송
         response = requests.get(f"https://j10e201.p.ssafy.io/api/dub/check/{dubCode}/{is_success}")
 
         # 알림 전송
