@@ -60,10 +60,12 @@ def create_cover(request: Request):
         
         logger.info(f"Response status {response.status_code}")
         msg = f'AI 커버 "{coverName}" 제작이 완료되었습니다.'
+        is_success = "true"
 
     except TooLongYoutubeException as e:
         logger.info(f"Youtube error : {e}")
         msg = f'AI 커버 "{coverName}"의 유튜브 영상 길이가 10분이 넘습니다.'
+        is_success = "false"
     
     except (ex.PytubeError,
             ex.MaxRetriesExceeded,
@@ -79,12 +81,17 @@ def create_cover(request: Request):
             ex.VideoRegionBlocked) as e:
         logger.info(f"Youtube error : {e}")
         msg = f'AI 커버 "{coverName}"의 유튜브에 접근할 수 없습니다.'
+        is_success = "false"
     
     except Exception as e:
         logger.info(f"Error occurred: {e}")
         msg = f'AI 커버 "{coverName}" 제작에 실패했습니다.'
+        is_success = "false"
     
     finally:
+        # 커버 생성 여부 전송
+        response = requests.get(f"https://j10e201.p.ssafy.io/api/cover/check/{coverCode}/{is_success}")
+
         # 알림 전송
         sendNotification(userCode, coverCode, msg)
 
