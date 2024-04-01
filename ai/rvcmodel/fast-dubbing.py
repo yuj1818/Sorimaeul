@@ -10,6 +10,7 @@ import requests
 import logging
 
 
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
@@ -135,4 +136,4 @@ def create(request: Request, background_tasks: BackgroundTasks):
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app=app, host='0.0.0.0', port=7864)
+    uvicorn.run(app="fast-dubbing:app", host='0.0.0.0', port=7864, reload=True)

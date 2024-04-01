@@ -12,6 +12,7 @@ import logging
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"  # Arrange GPU devices starting from 0
 os.environ["CUDA_VISIBLE_DEVICES"]= "9"  # Set the GPU 9 to use
 
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 cur_dir = os.getcwd()
@@ -128,4 +129,4 @@ def cover(request: Request, background_tasks: BackgroundTasks):
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app=app, host='0.0.0.0', port=7866)
+    uvicorn.run(app="infer-cover:app", host='0.0.0.0', port=7866, reload=True)

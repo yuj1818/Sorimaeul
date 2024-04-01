@@ -176,7 +176,7 @@ def worker(modelcode, usercode, modelname, exp_dir1, trainset_dir4, total_epoch1
 
 if __name__ == '__main__':
     import uvicorn
-    uvicorn.run(app=app, host='0.0.0.0', port=7865)
+    uvicorn.run(app="train-model:app", host='0.0.0.0', port=7865, reload=True)
 
 
 # @app.route('/train_start_all', methods=['POST'])
