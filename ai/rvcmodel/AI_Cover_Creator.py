@@ -1,4 +1,3 @@
-from pytube import YouTube
 from yt_dlp import YoutubeDL
 from pydub import AudioSegment
 import myinfer as mif
@@ -53,8 +52,6 @@ class Creator:
 
         # 영상 정보 가져오기
         info = yt.extract_info(youtubeLink, download=False)
-
-        logger.info(f"Youtube info : {info}")
 
         if info.get('duration') > 600:
             raise TooLongYoutubeException
